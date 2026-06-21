@@ -39,22 +39,32 @@ export default function HowItsBuiltPage() {
       </Link>
 
       <div style={{ display: "flex", alignItems: "center", gap: 16, margin: "28px 0 8px" }}>
-        <div
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: "var(--r-full)",
-            background: "var(--accent)",
-            color: "var(--text-inverse)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            font: "600 20px var(--font-display)",
-            flex: "none",
-          }}
-        >
-          MA
-        </div>
+        {siteConfig.photo ? (
+          <img
+            src={siteConfig.photo}
+            alt={siteConfig.author}
+            width={56}
+            height={56}
+            style={{ width: 56, height: 56, borderRadius: "var(--r-full)", objectFit: "cover", flex: "none" }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: "var(--r-full)",
+              background: "var(--accent)",
+              color: "var(--text-inverse)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              font: "600 20px var(--font-display)",
+              flex: "none",
+            }}
+          >
+            {siteConfig.initials}
+          </div>
+        )}
         <div>
           <h1
             style={{
