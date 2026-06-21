@@ -14,6 +14,7 @@ from homescope_etl.pipeline.adapter import SourceAdapter
 from homescope_etl.pipeline.run import run_pipeline
 from homescope_etl.pipeline.sources.broken import BrokenSource
 from homescope_etl.pipeline.sources.synthetic import SyntheticSource
+from homescope_etl.tiles.build import build_tiles
 
 
 def main() -> None:
@@ -38,6 +39,11 @@ def main() -> None:
         help="Also include the drifted broken source to demonstrate rejection",
     )
 
+    tiles = sub.add_parser("build-tiles", help="Build per-resolution PMTiles")
+    tiles.add_argument(
+        "--resolution", nargs="+", choices=RESOLUTION_ORDER, default=list(RESOLUTION_ORDER)
+    )
+
     args = parser.parse_args()
     if args.command == "load-geometry":
         load_geometry(args.resolution)
@@ -50,6 +56,8 @@ def main() -> None:
         if args.with_broken:
             adapters.append(BrokenSource())
         run_pipeline(adapters)
+    elif args.command == "build-tiles":
+        build_tiles(args.resolution)
 
 
 if __name__ == "__main__":
