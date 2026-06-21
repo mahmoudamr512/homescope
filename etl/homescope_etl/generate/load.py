@@ -8,7 +8,7 @@ from homescope_etl.db import get_dsn
 from homescope_etl.generate.generator import RegionRef, compute_bases, generate_region_series
 
 
-def _fetch_regions(conn: psycopg.Connection) -> list[RegionRef]:
+def fetch_regions(conn: psycopg.Connection) -> list[RegionRef]:
     with conn.cursor() as cur:
         cur.execute(
             "SELECT region_id, resolution, geoid, parent_state_geoid, parent_county_geoid "

@@ -4,9 +4,16 @@ from __future__ import annotations
 
 import argparse
 
-from homescope_etl.generate.load import generate_metrics
+import psycopg
+
+from homescope_etl.db import get_dsn
+from homescope_etl.generate.load import fetch_regions, generate_metrics
 from homescope_etl.geometry.load import load_geometry
 from homescope_etl.geometry.sources import RESOLUTION_ORDER
+from homescope_etl.pipeline.adapter import SourceAdapter
+from homescope_etl.pipeline.run import run_pipeline
+from homescope_etl.pipeline.sources.broken import BrokenSource
+from homescope_etl.pipeline.sources.synthetic import SyntheticSource
 
 
 def main() -> None:
@@ -22,11 +29,27 @@ def main() -> None:
     gen.add_argument("--months", type=int, default=60)
     gen.add_argument("--seed", type=int, default=42)
 
+    run = sub.add_parser("run", help="Run the resilient adapter->validate->load pipeline")
+    run.add_argument("--months", type=int, default=60)
+    run.add_argument("--seed", type=int, default=42)
+    run.add_argument(
+        "--with-broken",
+        action="store_true",
+        help="Also include the drifted broken source to demonstrate rejection",
+    )
+
     args = parser.parse_args()
     if args.command == "load-geometry":
         load_geometry(args.resolution)
     elif args.command == "generate-metrics":
         generate_metrics(months=args.months, seed=args.seed)
+    elif args.command == "run":
+        with psycopg.connect(get_dsn()) as conn:
+            regions = fetch_regions(conn)
+        adapters: list[SourceAdapter] = [SyntheticSource(regions, args.months, args.seed)]
+        if args.with_broken:
+            adapters.append(BrokenSource())
+        run_pipeline(adapters)
 
 
 if __name__ == "__main__":
