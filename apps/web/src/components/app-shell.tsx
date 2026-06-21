@@ -1,12 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { type MetricKey, getMetric, metricKeys } from "@homescope/contract";
-import { useCallback, useMemo, useState } from "react";
+import { type MetricKey, getMetric, metricKeySchema, metricKeys } from "@homescope/contract";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { RESOLUTIONS, type Resolution, fetchCurrent } from "@/lib/api";
 import { siteConfig } from "@/lib/site";
 import { Legend } from "./controls/legend";
 import { Segmented } from "./controls/segmented";
+import { DetailPanel } from "./detail-panel";
 import MapView from "./map/map-view";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -17,14 +19,43 @@ const RESOLUTION_LABELS: Record<Resolution, string> = {
   zip: "ZIP",
 };
 
+function parseMetric(raw: string | null): MetricKey {
+  const parsed = metricKeySchema.safeParse(raw);
+  return parsed.success ? parsed.data : "median_price";
+}
+
+function parseResolution(raw: string | null): Resolution | null {
+  return RESOLUTIONS.includes(raw as Resolution) ? (raw as Resolution) : null;
+}
+
+function resolutionFromRegionId(id: string | null): Resolution | null {
+  if (!id) return null;
+  return parseResolution(id.split(":")[0] ?? null);
+}
+
 export function AppShell() {
-  const [metric, setMetric] = useState<MetricKey>("median_price");
-  const [manualResolution, setManualResolution] = useState<Resolution | null>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [metric, setMetric] = useState<MetricKey>(() => parseMetric(searchParams.get("metric")));
+  const [selectedId, setSelectedId] = useState<string | null>(() => searchParams.get("region"));
+  const [manualResolution, setManualResolution] = useState<Resolution | null>(
+    () => parseResolution(searchParams.get("resolution")) ?? resolutionFromRegionId(searchParams.get("region")),
+  );
   const [zoomResolution, setZoomResolution] = useState<Resolution>("state");
   const [colorblind, setColorblind] = useState(false);
 
   const activeResolution = manualResolution ?? zoomResolution;
   const onZoomResolution = useCallback((r: Resolution) => setZoomResolution(r), []);
+
+  // Keep the URL in sync so any view is shareable/bookmarkable.
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set("metric", metric);
+    if (manualResolution) params.set("resolution", manualResolution);
+    if (selectedId) params.set("region", selectedId);
+    router.replace(`/?${params.toString()}`, { scroll: false });
+  }, [metric, manualResolution, selectedId, router]);
 
   const { data } = useQuery({
     queryKey: ["current", activeResolution, metric],
@@ -45,7 +76,9 @@ export function AppShell() {
         values={data?.values}
         domain={data?.domain}
         colorblind={colorblind}
+        selectedId={selectedId}
         onZoomResolution={onZoomResolution}
+        onSelect={setSelectedId}
       />
 
       <header style={topBar}>
@@ -56,12 +89,7 @@ export function AppShell() {
           <span style={{ fontSize: 10.5, color: "var(--text-tertiary)" }}>by Mahmoud Amr</span>
         </div>
         <div style={{ margin: "0 auto" }}>
-          <Segmented
-            ariaLabel="Metric"
-            options={metricOptions}
-            value={metric}
-            onChange={setMetric}
-          />
+          <Segmented ariaLabel="Metric" options={metricOptions} value={metric} onChange={setMetric} />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "none" }}>
           <a href="/how-its-built" style={howBuiltLink}>
@@ -101,6 +129,10 @@ export function AppShell() {
           Synthetic, illustrative data · real Census boundaries
         </span>
       </div>
+
+      {selectedId && (
+        <DetailPanel regionId={selectedId} metric={metric} onClose={() => setSelectedId(null)} />
+      )}
     </main>
   );
 }
