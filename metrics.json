@@ -1,0 +1,30 @@
+{
+  "median_price": {
+    "label": "Median Price",
+    "unit": "USD",
+    "format": "currency",
+    "aggregation": "median",
+    "ramp": "sequential"
+  },
+  "inventory": {
+    "label": "Inventory",
+    "unit": "count",
+    "format": "number",
+    "aggregation": "sum",
+    "ramp": "sequential"
+  },
+  "days_on_market": {
+    "label": "Days on Market",
+    "unit": "days",
+    "format": "number",
+    "aggregation": "median",
+    "ramp": "sequential"
+  },
+  "yoy_price_change": {
+    "label": "YoY Change",
+    "unit": "%",
+    "format": "percent",
+    "aggregation": "derived",
+    "ramp": "diverging"
+  }
+}
