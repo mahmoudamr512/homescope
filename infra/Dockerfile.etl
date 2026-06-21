@@ -1,12 +1,21 @@
 FROM python:3.12-slim-bookworm
 
-# GDAL (ogr2ogr) for geometry loading, plus unzip for shapefile archives.
-# tippecanoe (tile generation) is added in the M2 tile stage.
+# GDAL (ogr2ogr) for geometry loading, unzip for shapefile archives, and the
+# build toolchain to compile tippecanoe (emits PMTiles directly).
 RUN apt-get update && apt-get install -y --no-install-recommends \
       gdal-bin \
       ca-certificates \
       unzip \
+      git \
+      build-essential \
+      libsqlite3-dev \
+      zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
+
+RUN git clone --depth 1 https://github.com/felt/tippecanoe.git /tmp/tippecanoe \
+    && make -C /tmp/tippecanoe -j2 \
+    && make -C /tmp/tippecanoe install \
+    && rm -rf /tmp/tippecanoe
 
 WORKDIR /app
 COPY etl /app/etl
