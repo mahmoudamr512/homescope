@@ -108,6 +108,8 @@ def load_resolution(resolution: str) -> int:
             cur.execute("SELECT count(*) FROM regions WHERE resolution = %s", (resolution,))
             row = cur.fetchone()
             count = int(row[0]) if row else 0
+            # Staging is a build artifact; drop it so it never reaches a hosted DB.
+            cur.execute(f"DROP TABLE IF EXISTS staging_{resolution}")
         conn.commit()
     return count
 

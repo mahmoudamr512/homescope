@@ -10,6 +10,7 @@ from homescope_etl.db import get_dsn
 from homescope_etl.generate.load import fetch_regions, generate_metrics
 from homescope_etl.geometry.load import load_geometry
 from homescope_etl.geometry.sources import RESOLUTION_ORDER
+from homescope_etl.neon.export import export_neon
 from homescope_etl.pipeline.adapter import SourceAdapter
 from homescope_etl.pipeline.run import run_pipeline
 from homescope_etl.pipeline.sources.broken import BrokenSource
@@ -44,6 +45,10 @@ def main() -> None:
         "--resolution", nargs="+", choices=RESOLUTION_ORDER, default=list(RESOLUTION_ORDER)
     )
 
+    neon = sub.add_parser("export-neon", help="Copy a slim dataset into a hosted Neon database")
+    neon.add_argument("--target", required=True, help="Target (Neon) DATABASE_URL")
+    neon.add_argument("--zip-months", type=int, default=12)
+
     args = parser.parse_args()
     if args.command == "load-geometry":
         load_geometry(args.resolution)
@@ -58,6 +63,8 @@ def main() -> None:
         run_pipeline(adapters)
     elif args.command == "build-tiles":
         build_tiles(args.resolution)
+    elif args.command == "export-neon":
+        export_neon(args.target, zip_months=args.zip_months)
 
 
 if __name__ == "__main__":
