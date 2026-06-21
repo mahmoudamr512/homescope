@@ -53,9 +53,30 @@ export async function fetchSeries(
   return res.json() as Promise<SeriesResponse>;
 }
 
+export interface SearchResult {
+  regionId: string;
+  name: string;
+  resolution: Resolution;
+  lng: number;
+  lat: number;
+}
+
+export async function fetchSearch(q: string): Promise<SearchResult[]> {
+  const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+  if (!res.ok) throw new Error("Search failed");
+  const data = (await res.json()) as { results: SearchResult[] };
+  return data.results;
+}
+
 /** Auto resolution from zoom (metro is manual-only). */
 export function resolutionForZoom(zoom: number): Resolution {
   if (zoom < 4) return "state";
   if (zoom < 6) return "county";
   return "zip";
 }
+
+export function zoomForResolution(resolution: Resolution): number {
+  return { state: 4.5, metro: 7, county: 7.5, zip: 10 }[resolution];
+}
+
+export const NATIONAL_VIEW = { lng: -96, lat: 38.4, zoom: 3.45 };

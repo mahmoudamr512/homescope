@@ -4,9 +4,17 @@ import { useQuery } from "@tanstack/react-query";
 import { type MetricKey, getMetric, metricKeySchema, metricKeys } from "@homescope/contract";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { RESOLUTIONS, type Resolution, fetchCurrent } from "@/lib/api";
+import {
+  NATIONAL_VIEW,
+  RESOLUTIONS,
+  type Resolution,
+  type SearchResult,
+  fetchCurrent,
+  zoomForResolution,
+} from "@/lib/api";
 import { siteConfig } from "@/lib/site";
 import { Legend } from "./controls/legend";
+import { SearchBox } from "./controls/search-box";
 import { Segmented } from "./controls/segmented";
 import { DetailPanel } from "./detail-panel";
 import MapView from "./map/map-view";
@@ -44,9 +52,22 @@ export function AppShell() {
   );
   const [zoomResolution, setZoomResolution] = useState<Resolution>("state");
   const [colorblind, setColorblind] = useState(false);
+  const [focus, setFocus] = useState<{ lng: number; lat: number; zoom: number } | null>(null);
 
   const activeResolution = manualResolution ?? zoomResolution;
   const onZoomResolution = useCallback((r: Resolution) => setZoomResolution(r), []);
+
+  const onPick = useCallback((result: SearchResult) => {
+    setManualResolution(result.resolution);
+    setSelectedId(result.regionId);
+    setFocus({ lng: result.lng, lat: result.lat, zoom: zoomForResolution(result.resolution) });
+  }, []);
+
+  const onReset = useCallback(() => {
+    setManualResolution(null);
+    setSelectedId(null);
+    setFocus({ ...NATIONAL_VIEW });
+  }, []);
 
   // Keep the URL in sync so any view is shareable/bookmarkable.
   useEffect(() => {
@@ -77,6 +98,7 @@ export function AppShell() {
         domain={data?.domain}
         colorblind={colorblind}
         selectedId={selectedId}
+        focus={focus}
         onZoomResolution={onZoomResolution}
         onSelect={setSelectedId}
       />
@@ -88,9 +110,10 @@ export function AppShell() {
           </span>
           <span style={{ fontSize: 10.5, color: "var(--text-tertiary)" }}>by Mahmoud Amr</span>
         </div>
-        <div style={{ margin: "0 auto" }}>
-          <Segmented ariaLabel="Metric" options={metricOptions} value={metric} onChange={setMetric} />
+        <div style={{ flex: 1, maxWidth: 320 }}>
+          <SearchBox onPick={onPick} />
         </div>
+        <Segmented ariaLabel="Metric" options={metricOptions} value={metric} onChange={setMetric} />
         <div style={{ display: "flex", alignItems: "center", gap: 8, flex: "none" }}>
           <a href="/how-its-built" style={howBuiltLink}>
             How it&apos;s built
@@ -110,6 +133,9 @@ export function AppShell() {
 
       <div style={bottomRight}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button type="button" onClick={onReset} style={autoChip(false)}>
+            Reset view
+          </button>
           <button
             type="button"
             onClick={() => setManualResolution(null)}
@@ -146,6 +172,7 @@ const topBar: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   gap: 16,
+  flexWrap: "wrap",
   padding: "10px 16px",
   background: "color-mix(in srgb, var(--surface) 86%, transparent)",
   backdropFilter: "blur(12px)",

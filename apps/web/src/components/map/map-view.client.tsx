@@ -19,6 +19,7 @@ interface Props {
   domain: [number, number] | undefined;
   colorblind: boolean;
   selectedId: string | null;
+  focus: { lng: number; lat: number; zoom: number } | null;
   onZoomResolution: (resolution: Resolution) => void;
   onSelect: (regionId: string | null) => void;
 }
@@ -42,6 +43,7 @@ export default function MapViewClient({
   domain,
   colorblind,
   selectedId,
+  focus,
   onZoomResolution,
   onSelect,
 }: Props) {
@@ -224,6 +226,13 @@ export default function MapViewClient({
       : (["case", ["boolean", ["feature-state", "hover"], false], 1, 0.85] as const);
     map.setPaintProperty(`${res}-fill`, "fill-opacity", dim as unknown as number);
   }, [selectedId, activeResolution, loaded]);
+
+  // Fly to a searched/reset location.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded || !focus) return;
+    map.flyTo({ center: [focus.lng, focus.lat], zoom: focus.zoom, duration: 800 });
+  }, [focus, loaded]);
 
   return <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />;
 }

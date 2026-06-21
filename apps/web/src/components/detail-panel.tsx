@@ -56,7 +56,7 @@ export function DetailPanel({ regionId, metric, onClose }: Props) {
   }
 
   return (
-    <aside style={panel}>
+    <aside style={panel} className="hs-panel">
       <div style={header}>
         <div>
           <div style={{ font: "600 17px var(--font-display)", color: "var(--text-primary)" }}>
