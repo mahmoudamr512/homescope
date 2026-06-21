@@ -1,0 +1,61 @@
+name: Scheduled ETL refresh
+
+# Demonstrates a repeatable, scheduled pipeline ("stays consistent over time").
+# Runs monthly and on demand. Steps run only when the DATABASE_URL secret is set,
+# so the workflow is a no-op until the hosted database (e.g. Neon) is configured.
+on:
+  schedule:
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Note when no database is configured
+        if: ${{ env.DATABASE_URL == '' }}
+        run: echo "DATABASE_URL secret not set; skipping. Add it in repo settings to enable scheduled refresh."
+
+      - uses: pnpm/action-setup@v4
+        if: ${{ env.DATABASE_URL != '' }}
+      - uses: actions/setup-node@v4
+        if: ${{ env.DATABASE_URL != '' }}
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install JS deps
+        if: ${{ env.DATABASE_URL != '' }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply migrations and seed metrics
+        if: ${{ env.DATABASE_URL != '' }}
+        run: |
+          pnpm --filter @homescope/db db:migrate
+          pnpm --filter @homescope/db db:seed-metrics
+
+      - uses: actions/setup-python@v5
+        if: ${{ env.DATABASE_URL != '' }}
+        with:
+          python-version: "3.12"
+      - name: Install GDAL and the ETL
+        if: ${{ env.DATABASE_URL != '' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gdal-bin
+          pip install -e ".[dev]"
+        working-directory: etl
+
+      - name: Refresh geometry and metrics
+        if: ${{ env.DATABASE_URL != '' }}
+        working-directory: etl
+        run: |
+          python -m homescope_etl load-geometry
+          python -m homescope_etl run
+
+      # Tile rebuild/publish depends on your tile host (CDN/object storage) and is
+      # intentionally left out of the scheduled job. Run `build-tiles` in the ETL
+      # container and publish the PMTiles wherever NEXT_PUBLIC_TILES_URL points.
