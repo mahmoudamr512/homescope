@@ -5,11 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "predev": "node scripts/build-states-geojson.mjs",
     "build": "next build",
+    "prebuild": "node scripts/build-states-geojson.mjs",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "data:states": "node scripts/build-states-geojson.mjs"
   },
   "dependencies": {
     "@homescope/config": "workspace:*",
@@ -30,7 +33,9 @@
     "eslint": "9.14.0",
     "jsdom": "25.0.1",
     "tailwindcss": "^4.1.13",
+    "topojson-client": "3.1.0",
     "typescript": "5.6.3",
+    "us-atlas": "3.0.1",
     "vitest": "2.1.4"
   }
 }
