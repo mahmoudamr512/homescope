@@ -82,11 +82,12 @@ export default function MapViewClient({
     mapRef.current = map;
 
     map.on("load", () => {
-      const origin = window.location.origin;
+      const tilesBase =
+        process.env.NEXT_PUBLIC_TILES_URL || `${window.location.origin}/tiles`;
       for (const res of RESOLUTIONS) {
         map.addSource(res, {
           type: "vector",
-          url: `pmtiles://${origin}/tiles/${res}.pmtiles`,
+          url: `pmtiles://${tilesBase}/${res}.pmtiles`,
           promoteId: { regions: "id" },
         });
         map.addLayer({
