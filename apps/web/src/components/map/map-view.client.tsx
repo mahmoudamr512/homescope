@@ -18,7 +18,9 @@ interface Props {
   values: Record<string, number> | undefined;
   domain: [number, number] | undefined;
   colorblind: boolean;
+  selectedId: string | null;
   onZoomResolution: (resolution: Resolution) => void;
+  onSelect: (regionId: string | null) => void;
 }
 
 function nodataColor(): string {
@@ -39,23 +41,26 @@ export default function MapViewClient({
   values,
   domain,
   colorblind,
+  selectedId,
   onZoomResolution,
+  onSelect,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
   const [loaded, setLoaded] = useState(false);
 
-  // Latest props for use inside imperative map event handlers.
   const activeRef = useRef(activeResolution);
   const valuesRef = useRef(values);
   const metricRef = useRef(metric);
   const onZoomRef = useRef(onZoomResolution);
+  const onSelectRef = useRef(onSelect);
+  const selectedRef = useRef<{ source: string; id: string } | null>(null);
   activeRef.current = activeResolution;
   valuesRef.current = values;
   metricRef.current = metric;
   onZoomRef.current = onZoomResolution;
+  onSelectRef.current = onSelect;
 
-  // Create the map once.
   useEffect(() => {
     if (!containerRef.current) return;
     if (!protocolRegistered) {
@@ -88,10 +93,7 @@ export default function MapViewClient({
           source: res,
           "source-layer": "regions",
           layout: { visibility: "none" },
-          paint: {
-            "fill-color": "#D7DEE6",
-            "fill-opacity": 0.85,
-          },
+          paint: { "fill-color": "#D7DEE6", "fill-opacity": 0.85 },
         });
         map.addLayer({
           id: `${res}-line`,
@@ -102,11 +104,20 @@ export default function MapViewClient({
           paint: {
             "line-color": [
               "case",
+              ["boolean", ["feature-state", "selected"], false],
+              "#F4A218",
               ["boolean", ["feature-state", "hover"], false],
               "#0F172A",
               "rgba(255,255,255,0.6)",
             ],
-            "line-width": ["case", ["boolean", ["feature-state", "hover"], false], 1.4, 0.4],
+            "line-width": [
+              "case",
+              ["boolean", ["feature-state", "selected"], false],
+              2.5,
+              ["boolean", ["feature-state", "hover"], false],
+              1.4,
+              0.4,
+            ],
           },
         });
       }
@@ -115,13 +126,19 @@ export default function MapViewClient({
 
     map.on("zoomend", () => onZoomRef.current(resolutionForZoom(map.getZoom())));
 
+    map.on("click", (e) => {
+      const res = activeRef.current;
+      const features = map.queryRenderedFeatures(e.point, { layers: [`${res}-fill`] });
+      const feature = features[0];
+      onSelectRef.current(feature && feature.id !== undefined ? String(feature.id) : null);
+    });
+
     const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
     let hovered: string | null = null;
 
     map.on("mousemove", (e) => {
       const res = activeRef.current;
-      const features = map.queryRenderedFeatures(e.point, { layers: [`${res}-fill`] });
-      const feature = features[0];
+      const feature = map.queryRenderedFeatures(e.point, { layers: [`${res}-fill`] })[0];
       if (!feature || feature.id === undefined) {
         if (hovered !== null) {
           map.setFeatureState({ source: res, sourceLayer: "regions", id: hovered }, { hover: false });
@@ -162,7 +179,6 @@ export default function MapViewClient({
     };
   }, []);
 
-  // Toggle which resolution's layers are visible.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded) return;
@@ -173,7 +189,6 @@ export default function MapViewClient({
     }
   }, [activeResolution, loaded]);
 
-  // Recolor and hydrate feature-state for the active resolution.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loaded || !values || !domain) return;
@@ -185,6 +200,30 @@ export default function MapViewClient({
       map.setFeatureState({ source: res, sourceLayer: "regions", id }, { value });
     }
   }, [loaded, activeResolution, metric, values, domain, colorblind]);
+
+  // Selection: highlight the selected region and dim the rest.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded) return;
+    const res = activeResolution;
+
+    if (selectedRef.current) {
+      map.setFeatureState(
+        { source: selectedRef.current.source, sourceLayer: "regions", id: selectedRef.current.id },
+        { selected: false },
+      );
+      selectedRef.current = null;
+    }
+    if (selectedId) {
+      map.setFeatureState({ source: res, sourceLayer: "regions", id: selectedId }, { selected: true });
+      selectedRef.current = { source: res, id: selectedId };
+    }
+
+    const dim = selectedId
+      ? (["case", ["boolean", ["feature-state", "selected"], false], 1, 0.5] as const)
+      : (["case", ["boolean", ["feature-state", "hover"], false], 1, 0.85] as const);
+    map.setPaintProperty(`${res}-fill`, "fill-opacity", dim as unknown as number);
+  }, [selectedId, activeResolution, loaded]);
 
   return <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />;
 }
