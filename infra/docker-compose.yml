@@ -31,5 +31,19 @@ services:
       - "3000:3000"
     profiles: ["full"]
 
+  etl:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.etl
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-homescope}:${POSTGRES_PASSWORD:-homescope}@postgres:5432/${POSTGRES_DB:-homescope}
+    volumes:
+      - ..:/workspace
+    working_dir: /workspace/etl
+    profiles: ["etl"]
+
 volumes:
   pgdata:

@@ -3,10 +3,14 @@ name = "homescope-etl"
 version = "0.0.0"
 description = "HomeScope synthetic-data and tile ETL pipeline"
 requires-python = ">=3.11"
-dependencies = ["pydantic>=2.9"]
+dependencies = ["pydantic>=2.9", "psycopg[binary]>=3.2"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.3"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["db: tests that require a live Postgres/PostGIS database"]
 
 [build-system]
 requires = ["hatchling"]
