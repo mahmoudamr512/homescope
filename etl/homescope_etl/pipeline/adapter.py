@@ -1,13 +1,13 @@
 """Source adapter protocol.
 
-Each source is self-contained and exposes a uniform `fetch()` returning a raw,
-unvalidated payload (a plain dict). Adding a source means adding an adapter and
-nothing else. Validation happens downstream so adapters can faithfully reproduce
-drifted upstream shapes.
+Each source is self-contained and streams raw, unvalidated records (plain dicts)
+via `records()`. Streaming keeps memory bounded regardless of dataset size.
+Adding a source means adding an adapter and nothing else.
 """
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import Any, Protocol, runtime_checkable
 
 RawData = dict[str, Any]
@@ -17,4 +17,4 @@ RawData = dict[str, Any]
 class SourceAdapter(Protocol):
     name: str
 
-    def fetch(self) -> RawData: ...
+    def records(self) -> Iterable[RawData]: ...

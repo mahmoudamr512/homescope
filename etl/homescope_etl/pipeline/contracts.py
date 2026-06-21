@@ -1,4 +1,4 @@
-"""Explicit Pydantic contracts every raw source payload is validated against.
+"""Explicit Pydantic contract every raw source record is validated against.
 
 `extra="forbid"` makes unexpected fields a hard failure, which is the primary
 defense against silent upstream schema drift.
@@ -33,10 +33,3 @@ class RawMetricRecord(BaseModel):
         if not math.isfinite(v):
             raise ValueError("must be a finite number")
         return v
-
-
-class RawPayload(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    source: str
-    records: list[RawMetricRecord]

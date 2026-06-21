@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from homescope_etl.pipeline.contracts import RawMetricRecord, RawPayload
+from homescope_etl.pipeline.contracts import RawMetricRecord
 
 
 def test_valid_record_parses():
@@ -39,17 +39,4 @@ def test_non_finite_value_rejected():
 
 def test_empty_region_rejected():
     with pytest.raises(ValidationError):
-        RawMetricRecord(
-            region_id="   ", metric_key="median_price", period="2026-06-01", value=1.0
-        )
-
-
-def test_payload_wraps_records():
-    payload = RawPayload(
-        source="synthetic",
-        records=[
-            {"region_id": "state:48", "metric_key": "median_price", "period": "2026-06-01", "value": 1.0}
-        ],
-    )
-    assert payload.source == "synthetic"
-    assert len(payload.records) == 1
+        RawMetricRecord(region_id="   ", metric_key="median_price", period="2026-06-01", value=1.0)
