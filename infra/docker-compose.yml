@@ -1,0 +1,35 @@
+name: homescope
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-homescope}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-homescope}
+      POSTGRES_DB: ${POSTGRES_DB:-homescope}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-homescope}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.web
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-homescope}:${POSTGRES_PASSWORD:-homescope}@postgres:5432/${POSTGRES_DB:-homescope}
+    ports:
+      - "3000:3000"
+    profiles: ["full"]
+
+volumes:
+  pgdata:

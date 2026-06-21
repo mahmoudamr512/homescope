@@ -1,0 +1,13 @@
+[project]
+name = "homescope-etl"
+version = "0.0.0"
+description = "HomeScope synthetic-data and tile ETL pipeline"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.9"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
