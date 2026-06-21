@@ -1,0 +1,59 @@
+name: homescope-prod
+
+# Self-hostable production stack. Bootstrap order:
+#   1. docker compose -f infra/docker-compose.prod.yml up -d postgres
+#   2. docker compose -f infra/docker-compose.prod.yml run --rm web pnpm --filter @homescope/db db:migrate
+#   3. docker compose -f infra/docker-compose.prod.yml run --rm web pnpm --filter @homescope/db db:seed-metrics
+#   4. docker compose -f infra/docker-compose.prod.yml --profile bootstrap run --rm etl python -m homescope_etl load-geometry
+#   5. docker compose -f infra/docker-compose.prod.yml --profile bootstrap run --rm etl python -m homescope_etl run
+#   6. docker compose -f infra/docker-compose.prod.yml --profile bootstrap run --rm etl python -m homescope_etl build-tiles
+#   7. docker compose -f infra/docker-compose.prod.yml up -d web
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-homescope}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-homescope}
+      POSTGRES_DB: ${POSTGRES_DB:-homescope}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-homescope}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  etl:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.etl
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-homescope}:${POSTGRES_PASSWORD:-homescope}@postgres:5432/${POSTGRES_DB:-homescope}
+    volumes:
+      - ..:/workspace
+    working_dir: /workspace/etl
+    profiles: ["bootstrap"]
+
+  web:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.web
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-homescope}:${POSTGRES_PASSWORD:-homescope}@postgres:5432/${POSTGRES_DB:-homescope}
+    volumes:
+      - ../apps/web/public/tiles:/app/apps/web/public/tiles:ro
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+volumes:
+  pgdata:
