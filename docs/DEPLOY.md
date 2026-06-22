@@ -60,8 +60,9 @@ HTTP range requests PMTiles needs.
 
 ## 4. Vercel project
 
-Import the repo (the root `vercel.json` sets the install/build commands). Set environment
-variables in the Vercel project:
+New Project -> import `mahmoudamr512/homescope`. In the import settings set
+**Root Directory = `apps/web`** (Vercel then auto-detects Next.js and installs the pnpm
+workspace from the repo root). Add environment variables:
 
 | Variable | Value |
 |---|---|
