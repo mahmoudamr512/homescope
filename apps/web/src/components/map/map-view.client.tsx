@@ -6,7 +6,7 @@ import { Protocol } from "pmtiles";
 import { useEffect, useRef, useState } from "react";
 import { type MetricKey, getMetric } from "@homescope/contract";
 import { RESOLUTIONS, type Resolution, resolutionForZoom } from "@/lib/api";
-import { createBaseStyle } from "@/lib/basemap";
+import { applyBasemapTheme, createBaseStyle } from "@/lib/basemap";
 import { formatValue } from "@/lib/format";
 import { buildFillColor } from "@/lib/ramps";
 
@@ -75,13 +75,23 @@ export default function MapViewClient({
       container: containerRef.current,
       style: createBaseStyle(),
       center: [-96, 38.4],
-      zoom: 3.45,
-      attributionControl: false,
+      zoom: 3.2,
+      minZoom: 1.5,
+      maxZoom: 12,
+      attributionControl: { compact: true },
       dragRotate: false,
     });
     mapRef.current = map;
 
+    // Keep the world basemap in sync with the light/dark theme.
+    const themeObserver = new MutationObserver(() => applyBasemapTheme(map));
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
     map.on("load", () => {
+      applyBasemapTheme(map);
       const tilesBase =
         process.env.NEXT_PUBLIC_TILES_URL || `${window.location.origin}/tiles`;
       for (const res of RESOLUTIONS) {
@@ -175,6 +185,7 @@ export default function MapViewClient({
     });
 
     return () => {
+      themeObserver.disconnect();
       popup.remove();
       map.remove();
       mapRef.current = null;
