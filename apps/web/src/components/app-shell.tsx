@@ -108,7 +108,13 @@ export function AppShell() {
           <span style={{ font: "600 16px var(--font-display)", color: "var(--text-primary)" }}>
             {siteConfig.name}
           </span>
-          <span style={{ fontSize: 10.5, color: "var(--text-tertiary)" }}>by Mahmoud Amr</span>
+          <a
+            href="https://mahmoudamr.dev"
+            rel="author"
+            style={{ fontSize: 10.5, color: "var(--text-tertiary)", textDecoration: "none" }}
+          >
+            by {siteConfig.author}
+          </a>
         </div>
         <div style={{ flex: 1, maxWidth: 320 }}>
           <SearchBox onPick={onPick} />

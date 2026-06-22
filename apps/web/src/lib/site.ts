@@ -1,12 +1,17 @@
 export const siteConfig = {
   name: "HomeScope",
   author: "Mahmoud Amr",
-  jobTitle: "Senior Software Engineer",
+  jobTitle: "Senior Staff Engineer",
   location: "Cairo, Egypt",
   email: "contact@mahmoudamr.dev",
   url: "https://homescope.mahmoudamr.dev",
+  tagline: "Interactive US housing-market explorer — state to ZIP, instant metric switching.",
+  // Marketing one-liner used on the case-study page hero.
+  pitch:
+    "A production-grade geospatial data product: real Census geometry, a drift-resilient ETL, and 33k+ regions that recolor instantly. Built end to end by Mahmoud Amr.",
   description:
-    "Interactive US housing-market explorer across state, metro, county, and ZIP. Built by Mahmoud Amr.",
+    "Explore US home prices, inventory, and market trends across state, metro, county, and ZIP on an interactive map. A geospatial data-product showcase by Mahmoud Amr, Senior Staff Engineer.",
+  availableForWork: true,
   github: "https://github.com/mahmoudamr512",
   linkedin: "https://www.linkedin.com/in/mahmoud-a-46818913b/",
   upwork: "https://www.upwork.com/freelancers/mahmouda299",
@@ -22,8 +27,20 @@ export const siteConfig = {
     { label: "LinkedIn", href: "https://www.linkedin.com/in/mahmoud-a-46818913b/" },
     { label: "Upwork", href: "https://www.upwork.com/freelancers/mahmouda299" },
   ],
+  // Recruiter/client-facing skills (also feeds Person.knowsAbout for SEO).
+  skills: [
+    "Geospatial visualization (MapLibre / Mapbox GL)",
+    "Vector tiles & PMTiles",
+    "PostGIS & spatial data modeling",
+    "Data engineering & resilient ETL",
+    "Next.js / React / TypeScript",
+    "Python",
+    "System design & performance",
+    "AI-native applications",
+  ],
   keywords: [
     "Mahmoud Amr",
+    "Mahmoud Amr Senior Staff Engineer",
     "Mahmoud Amr software engineer",
     "geospatial visualization",
     "MapLibre",
@@ -36,5 +53,6 @@ export const siteConfig = {
     "choropleth map",
     "software engineer portfolio",
     "Cairo software engineer",
+    "hire software engineer",
   ],
 } as const;
