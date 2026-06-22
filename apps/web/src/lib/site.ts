@@ -1,24 +1,30 @@
 export const siteConfig = {
   name: "HomeScope",
   author: "Mahmoud Amr",
-  jobTitle: "Software Engineer",
+  jobTitle: "Senior Software Engineer",
+  location: "Cairo, Egypt",
+  email: "contact@mahmoudamr.dev",
   url: "https://homescope.mahmoudamr.dev",
   description:
     "Interactive US housing-market explorer across state, metro, county, and ZIP. Built by Mahmoud Amr.",
   github: "https://github.com/mahmoudamr512",
+  linkedin: "https://www.linkedin.com/in/mahmoud-a-46818913b/",
+  upwork: "https://www.upwork.com/freelancers/mahmouda299",
   repo: "https://github.com/mahmoudamr512/homescope",
-  // Author photo. Set NEXT_PUBLIC_AUTHOR_PHOTO to a path (e.g. /mahmoud-amr.jpg)
-  // or a full URL; falls back to an initials avatar when unset.
-  photo: process.env.NEXT_PUBLIC_AUTHOR_PHOTO ?? null,
+  // Author photo path (bundled in /public); falls back to initials if unset.
+  photo: process.env.NEXT_PUBLIC_AUTHOR_PHOTO ?? "/mahmoud-amr.jpg",
   initials: "MA",
   portfolio: [
-    { label: "mahmoudamr.dev", href: "https://mahmoudamr.dev" },
-    { label: "fastnet.mahmoudamr.dev", href: "https://fastnet.mahmoudamr.dev" },
+    { label: "Portfolio — mahmoudamr.dev", href: "https://mahmoudamr.dev" },
+    { label: "FastNet", href: "https://fastnet.mahmoudamr.dev" },
     { label: "obvote.com", href: "https://obvote.com" },
     { label: "GitHub", href: "https://github.com/mahmoudamr512" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/mahmoud-a-46818913b/" },
+    { label: "Upwork", href: "https://www.upwork.com/freelancers/mahmouda299" },
   ],
   keywords: [
     "Mahmoud Amr",
+    "Mahmoud Amr software engineer",
     "geospatial visualization",
     "MapLibre",
     "PMTiles",
@@ -29,5 +35,6 @@ export const siteConfig = {
     "housing market data",
     "choropleth map",
     "software engineer portfolio",
+    "Cairo software engineer",
   ],
 } as const;

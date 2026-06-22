@@ -7,8 +7,17 @@ export function StructuredData() {
     "@type": "Person",
     name: siteConfig.author,
     jobTitle: siteConfig.jobTitle,
-    url: siteConfig.url,
-    sameAs: siteConfig.portfolio.map((p) => p.href),
+    url: "https://mahmoudamr.dev",
+    image: `${siteConfig.url}${siteConfig.photo}`,
+    email: `mailto:${siteConfig.email}`,
+    address: { "@type": "PostalAddress", addressLocality: "Cairo", addressCountry: "EG" },
+    sameAs: [
+      siteConfig.github,
+      siteConfig.linkedin,
+      siteConfig.upwork,
+      "https://fastnet.mahmoudamr.dev",
+      "https://obvote.com",
+    ],
   };
 
   const app = {
@@ -19,7 +28,8 @@ export function StructuredData() {
     operatingSystem: "Web",
     description: siteConfig.description,
     url: siteConfig.url,
-    author: { "@type": "Person", name: siteConfig.author, url: siteConfig.url },
+    image: `${siteConfig.url}/opengraph-image`,
+    author: { "@type": "Person", name: siteConfig.author, url: "https://mahmoudamr.dev" },
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   };
 
