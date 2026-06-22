@@ -1,0 +1,10 @@
+# Not needed for the web build; tiles are served from Vercel Blob.
+.remember/
+.claude/
+etl/
+docs/
+*.pmtiles
+*.mbtiles
+.env
+.env.*
+!.env.example
