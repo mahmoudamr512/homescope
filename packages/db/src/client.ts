@@ -10,7 +10,9 @@ export function getDb(): Database {
   if (!db) {
     const url = process.env.DATABASE_URL;
     if (!url) throw new Error("DATABASE_URL is not set");
-    db = drizzle(postgres(url, { max: 10 }), { schema });
+    // prepare:false keeps this compatible with transaction-pooled endpoints
+    // (e.g. Neon's pgbouncer pooler); max kept low for serverless.
+    db = drizzle(postgres(url, { max: 5, prepare: false }), { schema });
   }
   return db;
 }

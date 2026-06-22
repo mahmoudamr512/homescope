@@ -1,10 +1,8 @@
-# Not needed for the web build; tiles are served from Vercel Blob.
+# Not needed for the web build. PMTiles ARE included (served same-origin from /tiles).
 .remember/
 .claude/
 etl/
 docs/
-*.pmtiles
-*.mbtiles
 .env
 .env.*
 !.env.example
