@@ -47,9 +47,16 @@ docker compose -f infra/docker-compose.yml run --rm etl \
 
 ## 3. PMTiles on Vercel Blob
 
-Upload `apps/web/public/tiles/{state,metro,county,zip}.pmtiles` to Vercel Blob (via the
-Vercel MCP or `vercel blob put`). Blob URLs support HTTP range requests, which PMTiles
-needs. Note the base URL (e.g. `https://<id>.public.blob.vercel-storage.com/tiles`).
+Create a Blob store in the Vercel dashboard (Storage -> Create -> Blob) and copy its
+read-write token. Then upload the four PMTiles with the helper script:
+
+```bash
+BLOB_READ_WRITE_TOKEN="vercel_blob_rw_..." node scripts/upload-tiles-blob.mjs
+```
+
+It uploads `state/metro/county/zip.pmtiles` and prints the `NEXT_PUBLIC_TILES_URL` to
+set (e.g. `https://<id>.public.blob.vercel-storage.com/tiles`). Blob URLs support the
+HTTP range requests PMTiles needs.
 
 ## 4. Vercel project
 
