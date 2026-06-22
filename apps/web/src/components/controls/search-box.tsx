@@ -18,7 +18,7 @@ export function SearchBox({ onPick }: { onPick: (result: SearchResult) => void }
   const boxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), 200);
+    const id = setTimeout(() => setDebounced(value), 120);
     return () => clearTimeout(id);
   }, [value]);
 
@@ -30,13 +30,15 @@ export function SearchBox({ onPick }: { onPick: (result: SearchResult) => void }
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  const { data } = useQuery({
+  const active = debounced.trim().length >= 2;
+  const { data, isFetching } = useQuery({
     queryKey: ["search", debounced],
     queryFn: () => fetchSearch(debounced),
-    enabled: debounced.trim().length >= 2,
+    enabled: active,
   });
 
   const results = data ?? [];
+  const showDropdown = open && active;
 
   return (
     <div ref={boxRef} style={{ position: "relative", width: "100%" }}>
@@ -52,7 +54,7 @@ export function SearchBox({ onPick }: { onPick: (result: SearchResult) => void }
         aria-label="Search locations"
         style={input}
       />
-      {open && results.length > 0 && (
+      {showDropdown && (
         <ul role="listbox" style={dropdown}>
           {results.map((r) => (
             <li key={r.regionId}>
@@ -70,11 +72,20 @@ export function SearchBox({ onPick }: { onPick: (result: SearchResult) => void }
               </button>
             </li>
           ))}
+          {results.length === 0 && (
+            <li style={hint}>{isFetching ? "Searching…" : "No matches"}</li>
+          )}
         </ul>
       )}
     </div>
   );
 }
+
+const hint: React.CSSProperties = {
+  padding: "8px 10px",
+  fontSize: 12.5,
+  color: "var(--text-tertiary)",
+};
 
 const input: React.CSSProperties = {
   width: "100%",

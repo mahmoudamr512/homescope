@@ -12,9 +12,10 @@ export const siteConfig = {
   photo: process.env.NEXT_PUBLIC_AUTHOR_PHOTO ?? null,
   initials: "MA",
   portfolio: [
-    { label: "fastnet-landing.vercel.app", href: "https://fastnet-landing.vercel.app" },
+    { label: "mahmoudamr.dev", href: "https://mahmoudamr.dev" },
+    { label: "fastnet.mahmoudamr.dev", href: "https://fastnet.mahmoudamr.dev" },
     { label: "obvote.com", href: "https://obvote.com" },
-    { label: "github.com/mahmoudamr512", href: "https://github.com/mahmoudamr512" },
+    { label: "GitHub", href: "https://github.com/mahmoudamr512" },
   ],
   keywords: [
     "Mahmoud Amr",
